@@ -1,4 +1,4 @@
-<p align="center"><img src="assets/banner.png" alt="condom: wrap it before you ship. Half a rendered condom, half the same shape written in code." width="100%"></p>
+<p align="center"><img src="assets/banner.png" alt="condom: wrap it before you ship. A black and gold foil wrapper, the left half rendered, the right half written in code." width="100%"></p>
 
 # Condom
 
