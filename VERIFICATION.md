@@ -1,6 +1,6 @@
 # What has been checked, and how
 
-Last checked: 2026-11-16. Every entry in `references/` is meant to carry a link to a primary source, a short quote from it and the
+Last checked: 2026-11-16 (SEC-SECRET-09 added and checked 2026-11-19). Every entry in `references/` is meant to carry a link to a primary source, a short quote from it and the
 date it was read. This file says which quotes have been confirmed on their pages and which have not.
 
 ## Method
@@ -12,7 +12,7 @@ date it was read. This file says which quotes have been confirmed on their pages
 
 Run it yourself: `python tools/check_quotes.py references/legal/privacy.md` (or any of the ten files).
 
-## Security files (five files, 106 entries)
+## Security files (five files, 107 entries)
 Every quote is on the page it cites, by script or by hand.
 
 ## Legal files (five files, 115 entries, plus four pointers in `privacy.md`)

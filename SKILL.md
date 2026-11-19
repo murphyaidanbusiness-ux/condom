@@ -71,7 +71,9 @@ entry in the reference files.
 6. **Someone else's record by changing an id**: lookups by id with no check that the row belongs to the caller. (SEC-ACCESS-04)
 7. **No limit on anything that costs money or sends messages**: login, sign-up, password reset, email, SMS, and above all AI
    endpoints. (SEC-ABUSE-01 to -03, SEC-AI-02)
-8. **Secrets in the repo or its history**: committed env files, keys in old commits, keys in logs. (SEC-SECRET-03, SEC-SECRET-04)
+8. **Secrets in the repo or its history**: committed env files, keys in old commits, keys in logs, and keys saved inside a
+   coding agent's own settings file (`.claude/settings.local.json`) by a "don't ask again" approval.
+   (SEC-SECRET-03, SEC-SECRET-04, SEC-SECRET-09)
 9. **Trackers and data collection with no privacy policy or consent**: analytics, ad pixels or session replay loading for
    everyone, and no page that says what is collected. (LAW-PRIV-01 to -03, LAW-TRACK-01 to -03)
 10. **Charging people with no terms, no way to cancel online, or a silent renewal**. (LAW-TERMS-01, LAW-BILL-01, -02, -05)

@@ -10,6 +10,7 @@ Scope: API keys and other secrets (in the browser, in git, in logs, in the built
 | SEC-PAY-02 | Order marked paid without a verified payment (success page, no webhook) |
 | SEC-PAY-03 | Stripe webhook with no signature check |
 | SEC-SECRET-03 | Keys committed to git or sitting in git history |
+| SEC-SECRET-09 | Keys saved in a coding agent's settings file (`.claude/settings.local.json`) and pushed |
 | SEC-PAY-04 | Replayed or duplicated webhooks (no idempotency) |
 | SEC-PAY-05 | Test keys or test mode in production |
 | SEC-SECRET-05 | Old Google API key that now reaches Gemini |
@@ -77,6 +78,15 @@ Scope: API keys and other secrets (in the browser, in git, in logs, in the built
 - **Fix:** add `.env*` (except `.env.example`) to `.gitignore`, `git rm --cached` tracked files. Rotate every key found, first, because history rewriting does not undo exposure. Optionally rewrite history with `git filter-repo` and force-push, then everyone re-clones. If the repo was ever public, treat all its keys as burned. Turn on GitHub secret scanning push protection. **Who:** owner rotates, Claude edits ignore files and runs the history search
 - **Severity:** critical, scraped within minutes of a push
 - **Source:** https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/removing-sensitive-data-from-a-repository · "if the sensitive data you need to remove is a secret (e.g. password/token/credential), as is often the case, then as a first step you need to revoke and/or rotate that secret." · read 2026-11-16
+
+### SEC-SECRET-09 · Keys saved in a coding agent's settings file and pushed
+- **Applies when:** the project was built with an AI coding agent (Claude Code, and any agent that keeps a settings or permissions folder in the project) and is, or ever was, a git repo.
+- **What goes wrong:** approving a command with "don't ask again" saves that exact command as a permission rule. If the command had a password, token or API key typed into it (a `curl` with a bearer token, a database URL, `KEY=... npm run ...`), the key is now sitting in a settings file. Claude Code keeps its local file out of git when it creates it, but a file made by hand, copied in, force-added, or caught by an old ignore rule is committed and pushed like any other. Secret scanners tuned for `.env` files can miss it.
+- **Find it:** 1. `git ls-files | rg "(^|/)\.claude/|settings\.local\.json"` (tracked agent settings; `.claude/settings.json` is meant to be shared, so read it too). Do the same for any other agent folder the repo tracks (`git ls-files | rg "(^|/)\.(cursor|codex|gemini|windsurf|aider)[^/]*/"`). 2. `rg -n "settings\.local\.json" .gitignore`; a bad result: no entry and the file exists. 3. History: `git log --all --oneline -- .claude/settings.local.json .claude/settings.json`. 4. Read every version, not only the current one: `git log --all -p -- .claude/` and look in each `allow` rule for anything shaped like a key (`sk-`, `sk_live`, `sk-ant-`, `service_role`, `AIza`, `whsec_`, `ghp_`, `Bearer `, `password=`, `token=`, a long `eyJ...` string, a database URL with a password). Report the commit, the rule and the first four characters, never the value. 5. Check the working copy too, tracked or not: a key in an untracked settings file is one `git add -A` from being pushed.
+- **Prove it:** code only.
+- **Fix:** rotate every key found, first (SEC-SECRET-08); removing the file does not take it out of history or out of anyone's clone. Then `git rm --cached .claude/settings.local.json`, add `.claude/settings.local.json` to `.gitignore`, and delete the rules that carry a key. From now on keep secrets in environment variables and refer to them by name in commands (`$STRIPE_KEY`), so an approved command never contains the value. If the repo was ever public, treat every key in those files as burned. **Who:** owner rotates, Claude edits the ignore file, the settings file and runs the history search
+- **Severity:** critical when the repo is or was public; high otherwise
+- **Source:** https://code.claude.com/docs/en/settings · "Claude Code saves that approval as an `allow` rule in `.claude/settings.local.json`." · read 2026-11-19. Same page, on the file: "keeps it out of git when it creates the file; if you create it by hand, add it to `.gitignore` yourself" · read 2026-11-19. Scale of the problem in public repos: reported by Apiiro in November 2026 (https://apiiro.com/blog/coding-agents-leaking-secrets-github-dont-ask-again); the page refused a plain request, so its figures are UNVERIFIED here.
 
 ### SEC-PAY-04 · Replayed or duplicated webhooks (no idempotency)
 - **Applies when:** the webhook grants credits, sends an email, creates an order, or ships anything.
